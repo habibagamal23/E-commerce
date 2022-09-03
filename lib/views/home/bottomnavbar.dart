@@ -1,10 +1,11 @@
+import 'package:e_commerce/views/home/profle_page.dart';
 import 'package:flutter/material.dart';
 import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
 
 import 'homepage.dart';
 
-class BottomNavBar extends StatelessWidget {
-  const BottomNavBar({Key? key}) : super(key: key);
+class BottomNavbar extends StatelessWidget {
+  const BottomNavbar({Key? key}) : super(key: key);
 
   List<Widget> _buildScreens() {
     return [
@@ -12,7 +13,7 @@ class BottomNavBar extends StatelessWidget {
       Container(),
       Container(),
       Container(),
-      Container(),
+      const ProfilePage(),
     ];
   }
 

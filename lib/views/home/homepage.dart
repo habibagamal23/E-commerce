@@ -1,6 +1,7 @@
-import 'package:e_commerce/views/sherdWidgit/productItem.dart';
+import 'package:e_commerce/views/sherdWidgit/listItem.dart';
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
+import '../../controllers/firestoredb.dart';
 import '../../models/products.dart';
 
 class HomePage extends StatefulWidget {
@@ -13,70 +14,100 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
+    final database = Provider.of<Database>(context);
+
     final size = MediaQuery.of(context).size;
     return Scaffold(
-      body: SingleChildScrollView(
+        body: SingleChildScrollView(
+            child: Column(children: [
+      Stack(children: [
+        Image.network(
+          'https://cdn1.expertreviews.co.uk/sites/expertreviews/files/2019/08/best_online_clothes_shops.jpg',
+          width: double.infinity,
+          height: size.height * 0.3,
+          fit: BoxFit.cover,
+        ),
+        Opacity(
+          opacity: 0.3,
+          child: Container(
+            width: double.infinity,
+            height: size.height * 0.3,
+            color: Colors.black,
+          ),
+        ),
+        Text(
+          "Street Clothes",
+          style: Theme.of(context).textTheme.headline4!.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+        )
+      ]),
+      const SizedBox(height: 24.0),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: Column(
           children: [
-            Stack(children: [
-              Image.network(
-                "https://www.bing.com/images/search?view=detailV2&ccid=w8yXeoJv&id=3EF1E520660E1F9B36E17961631BF5A05688337C&thid=OIP.w8yXeoJvu0ppSlB-HHlNAQHaE7&mediaurl=https%3a%2f%2fwww.loveyourclothes.org.uk%2fsites%2fdefault%2ffiles%2flyc-clothesrail-header.jpg&cdnurl=https%3a%2f%2fth.bing.com%2fth%2fid%2fR.c3cc977a826fbb4a694a507e1c794d01%3frik%3dfDOIVqD1G2NheQ%26pid%3dImgRaw%26r%3d0&exph=1037&expw=1556&q=image+clothes&simid=607998401248959780&FORM=IRPRST&ck=35B5F0D89254E7C7510088DA3D8B5C54&selectedIndex=3&ajaxhist=0&ajaxserp=0",
-                width: double.infinity,
-                height: size.height * 0.3,
-                fit: BoxFit.cover,
-              ),
-              Opacity(
-                opacity: 0.3,
-                child: Container(
-                  width: double.infinity,
-                  height: size.height * 0.3,
-                  color: Colors.black,
-                ),
-              ),
-              Text(
-                "Street Clothes",
-                style: Theme.of(context).textTheme.headline4!.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-              )
-            ]),
-            const SizedBox(height: 24.0),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
-                children: [
-                  buildHeaderOfList(
-                      title: "Sale", subTitle: "Super Summer Sale!!"),
-                  const SizedBox(height: 8.0),
-                  SizedBox(
-                    height: 300,
-                    child: ListView.builder(
+            buildHeaderOfList(title: "Sale", subTitle: "Super Summer Sale!!"),
+            const SizedBox(height: 8.0),
+            SizedBox(
+              height: 300,
+              child: StreamBuilder<List<Products>>(
+                  stream: database.salesProductsStream(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.active) {
+                      final products = snapshot.data;
+                      if (products == null || products.isEmpty) {
+                        return const Center(
+                          child: Text('No Data Available!'),
+                        );
+                      }
+                      return ListView.builder(
                         scrollDirection: Axis.horizontal,
-                        itemCount: dummyProducts.length,
-                        itemBuilder: (context, int index) {
-                          return listItem(dummyProducts[index], context);
-                        }),
-                  ),
-                  buildHeaderOfList(
-                      title: "New", subTitle: "Super New Products!!"),
-                  const SizedBox(height: 8.0),
-                  SizedBox(
-                    height: 300,
-                    child: ListView.builder(
+                        itemCount: products.length,
+                        itemBuilder: (_, int index) => Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ListItemHome(product: products[index]),
+                        ),
+                      );
+                    }
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }),
+            ),
+            buildHeaderOfList(title: "New", subTitle: "Super New Products!!"),
+            const SizedBox(height: 8.0),
+            SizedBox(
+              height: 300,
+              child: StreamBuilder<List<Products>>(
+                  stream: database.newProductsStream(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.active) {
+                      final products = snapshot.data;
+                      if (products == null || products.isEmpty) {
+                        return const Center(
+                          child: Text('No Data Available!'),
+                        );
+                      }
+                      return ListView.builder(
                         scrollDirection: Axis.horizontal,
-                        itemCount: dummyProducts.length,
-                        itemBuilder: (context, int index) {
-                          return listItem(dummyProducts[index], context);
-                        }),
-                  ),
-                ],
-              ),
+                        itemCount: products.length,
+                        itemBuilder: (_, int index) => Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ListItemHome(product: products[index]),
+                        ),
+                      );
+                    }
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }),
             ),
           ],
         ),
-      ),
-    );
+      )
+    ])));
   }
 
   Widget buildHeaderOfList(
